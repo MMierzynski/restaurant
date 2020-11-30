@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello RegisterUserController!{% endblock %}
+
+{% block body %}
+
+<div class="example-wrapper">
+    <h1>Register</h1>
+
+    <ul>
+        {% for error in app.flashes('errors') %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+
+    {{ form(registerForm) }}
+</div>
+{% endblock %}
