@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AddressRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=AddressRepository::class)
@@ -19,21 +20,29 @@ class Address
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\Length(
+     *     min="5",
+     *     minMessage="Street name is to short, minimum 5 chars",
+     *     max="50",
+     *     maxMessage="Street name is to long, maximun 50 chars" )
      */
     private $street;
 
     /**
      * @ORM\Column(type="string", length=10)
+     * @Assert\NotBlank()
      */
     private $houseNumber;
 
     /**
      * @ORM\Column(type="string", length=10)
+     * @Assert\Regex(pattern="^\d{2}(?:[-\s]\d{3})?$^", message="Zip code is not valid")
      */
     private $zip;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\NotBlank()
      */
     private $city;
 
@@ -50,6 +59,7 @@ class Address
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="addresses")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\Valid()
      */
     private $owner;
 

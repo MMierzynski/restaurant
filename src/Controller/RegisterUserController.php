@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Address;
 use App\Entity\User;
 use App\Form\RegisterUserType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,25 +35,35 @@ class RegisterUserController extends AbstractController
      */
     public function index(Request $request): Response
     {
+        /**
+         * @var User $user
+         */
         $user = new User();
+        $address = new Address();
+        $address->setShipping(true)
+            ->setInvoice(true);
+        $user->addAddress($address);
         $registerForm = $this->createForm(RegisterUserType::class, $user);
 
         $registerForm->handleRequest($request);
         if($registerForm->isSubmitted() && $registerForm->isValid()){
-            $user= $registerForm->getData();
+            $user = $registerForm->getData();
+            $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPassword()));
+            $user->setRoles(['USER']);
+
             $userRepository = $this->entityManager->getRepository(User::class);
 
             if(!$userRepository->userExists($user)){
                 $this->entityManager->persist($user);
+                $this->entityManager->persist($user->getAddress());
                 $this->entityManager->flush();
 
-                $this->redirectToRoute('startpage');
+                return $this->redirectToRoute('startpage');
             }
 
             $this->addFlash('errors', sprintf('User %s already exists.', $user->getEmail()));
         }
 
-        dump($registerForm->getErrors());
 
         return $this->render('register_user/index.html.twig', [
             'controller_name' => 'RegisterUserController',

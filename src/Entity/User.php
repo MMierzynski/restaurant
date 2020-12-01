@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -23,6 +24,8 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank()
+     * @Assert\Email()
      */
     private $email;
 
@@ -34,27 +37,45 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Assert\Length(
+     *     min="6",
+     *     minMessage="Password is to short, minimum lenght: 6 chars",
+     *     max="25",
+     *     maxMessage="Password is too long, maximum lenght: 25 chars" )
      */
     private $password;
 
     /**
-     * @ORM\OneToMany(targetEntity=Address::class, mappedBy="owner", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Address::class, mappedBy="owner", orphanRemoval=true, cascade={"persist", "remove"})
+     * @Assert\Valid()
      */
     private $addresses;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\Length(
+     *     min="2",
+     *     minMessage="First name is too short",
+     *     max="50",
+     *     maxMessage="First name is too long"
+     * )
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\Length(
+     *     min="2",
+     *     minMessage="Last name is too short",
+     *     max="50",
+     *     maxMessage="Last name is too long"
+     * )
      */
     private $lastName;
 
     public function __construct()
     {
-        $this->adresses = new ArrayCollection();
+        $this->addresses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -165,8 +186,19 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getFirstName(): ?string
+    public function getAddress(): Address
     {
+        if(0 == $this->addresses->count()){
+            return new Address();
+        }
+
+        return $this->addresses->get(0);
+    }
+
+
+
+    public function getFirstName(): ?string
+        {
         return $this->firstName;
     }
 
