@@ -66,8 +66,7 @@ class RegisterUserController extends AbstractController
                 $this->entityManager->flush();
 
                 $email = (new Email())
-                    ->from(Address::fromString('Mateusz Mierzyński <kontakt.mmierzynski@gmail.com>'))
-                    ->to('mateusz.matuesz992@gmail.com')
+                    ->to($user->getEmail())
                     ->subject("User registration")
                     ->text("Thank you for registration")
                     ->html('<h1>Thank you for registration</h1>');
