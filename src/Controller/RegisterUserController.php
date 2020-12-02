@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Address;
 use App\Entity\User;
 use App\Form\RegisterUserType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,6 +9,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -23,11 +25,16 @@ class RegisterUserController extends AbstractController
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
+    /**
+     * @var MailerInterface
+     */
+    private MailerInterface $mailer;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager)
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, MailerInterface $mailer)
     {
         $this->passwordEncoder = $passwordEncoder;
         $this->entityManager = $entityManager;
+        $this->mailer = $mailer;
     }
 
     /**
@@ -39,7 +46,7 @@ class RegisterUserController extends AbstractController
          * @var User $user
          */
         $user = new User();
-        $address = new Address();
+        $address = new \App\Entity\Address();
         $address->setShipping(true)
             ->setInvoice(true);
         $user->addAddress($address);
@@ -57,6 +64,15 @@ class RegisterUserController extends AbstractController
                 $this->entityManager->persist($user);
                 $this->entityManager->persist($user->getAddress());
                 $this->entityManager->flush();
+
+                $email = (new Email())
+                    ->from(Address::fromString('Mateusz Mierzyński <kontakt.mmierzynski@gmail.com>'))
+                    ->to('mateusz.matuesz992@gmail.com')
+                    ->subject("User registration")
+                    ->text("Thank you for registration")
+                    ->html('<h1>Thank you for registration</h1>');
+
+                $this->mailer->send($email);
 
                 return $this->redirectToRoute('startpage');
             }
