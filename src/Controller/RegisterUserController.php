@@ -13,6 +13,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class RegisterUserController extends AbstractController
@@ -69,7 +70,7 @@ class RegisterUserController extends AbstractController
                     ->to($user->getEmail())
                     ->subject("User registration")
                     ->text("Thank you for registration")
-                    ->html('<h1>Thank you for registration</h1>');
+                    ->html('<h1>Thank you for registration</h1><p>Login to your account <a href="'.$this->generateUrl('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL).'">here</a></p>');
 
                 $this->mailer->send($email);
 
